@@ -10,7 +10,13 @@ class Clip(nn.Module):
         self.image_encoder = ImageEncoder()
         self.text_encoder = TextEncoder()
         
-        # 可学习的温度参数，初始值设为0.07（CLIP论文中的经验值）
+        # 可学习的温度参数,初始值设为0.07（CLIP论文中的经验值）
+        """
+            在clip的训练过程中,temperature参数控制了相似度矩阵的分布平滑的程度,影响模型对正负样本的区分能力。
+            当温度较低的时候,softmax的输出会更加尖锐,概率集中在最高相似度上。
+            当温度较高的时候,softmax输出会更加平滑,概率分布更均匀。
+            通过将temperature设为可学习的参数,模型可以在训练过程中自动调整这一参数,以找到最适合当前任务的平衡点,从而提升模型的性能。
+        """
         self.temperature = nn.Parameter(torch.ones([]) * temperature)
 
     def forward(self, image, text):
@@ -19,7 +25,7 @@ class Clip(nn.Module):
         
         r"""
         在clip中, 会使用L2归一化将图像和文本的特征向量都归一化到单位长度.
-        这样做的目的是为了计算余弦相似度，因为归一化后的点积等价于余弦相似度.
+        这样做的目的是为了计算余弦相似度,因为归一化后的点积等价于余弦相似度.
         """
         image_features = F.normalize(image_features, p=2, dim=1)  # [b, 8]
         text_features = F.normalize(text_features, p=2, dim=1)    # [b, 8]
